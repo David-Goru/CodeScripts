@@ -1,0 +1,109 @@
+/* This is a building script coded for Unity in C# by David Gómez (DavidGoru)
+   This script uses another script, Pathfinding, also posted in my github page
+   https://github.com/DavidGoru/CodeSamples/
+
+   I use materials to let the player know if the object can't be placed there
+   or if he's at a good spot (red vs green colors)
+   
+   The player can move the object freely above the ground with the layer "Ground",
+   and once the player clicks the object gets placed if the spot clicked is available. */
+
+GameObject objectBP;
+GameObject modelBP; // To store the model of the object and avoid finding it every frame
+Material greenColor;
+Material redColor;
+
+string objectToPlace = "Object name"; // The name of the object to be placed
+Vector3 lastPos;
+int rot;
+
+void Start()
+{
+    greenColor = (Material)Resources.Load("Objects/Materials/Green color");
+    redColor = (Material)Resources.Load("Objects/Materials/Red color");
+    rot = 0;
+}
+
+void Update()
+{
+    RaycastHit hit;
+    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+    // Change rotation
+    if (Input.GetKeyDown(KeyCode.R) && objectBP)
+    {
+        rot += 90;
+        if (rot == 360) rot = 0;
+        objectBP.transform.rotation = Quaternion.Euler(0, rot, 0);
+
+        Vector3 pos = new Vector3(lastPos.x, 0, lastPos.z);
+        Vector3 vPos = new Vector3(Mathf.Round(lastPos.x * 1.0f) / 1.0f, 0, Mathf.Round(lastPos.z * 1.0f) / 1.0f);
+        checkObjectPos(pos, vPos);
+    }
+
+    // Change position, if needed
+    if (Physics.Raycast(ray, out hit, 100, 1 << LayerMask.NameToLayer("Ground")))
+    {
+        Vector3 pos = new Vector3(hit.point.x, 0, hit.point.z);
+        Vector3 vPos = new Vector3(Mathf.Round(hit.point.x * 1.0f) / 1.0f, 0, Mathf.Round(hit.point.z * 1.0f) / 1.0f);
+        if (objectBP == null)
+        {
+            objectBP = (GameObject)Instantiate(Resources.Load("Objects/" + objectToPlace), pos, Quaternion.Euler(0, rot, 0));
+            lastPos = pos;
+            modelBP = objectBP.transform.Find("Model").gameObject;
+            modelBP.GetComponent<Renderer>().material = redColor;
+        }
+        else if (lastPos != pos && lastPos != vPos) checkObjectPos(pos, vPos);
+    }
+    else if (objectBP) Destroy(objectBP);
+
+    // Place object, if possible
+    if (Input.GetMouseButtonDown(0) && objectBP && modelBP.GetComponent<Renderer>().material.name == "Green color (Instance)") // Needs to be like %(Instance) for Unity reasons
+    {
+        GameObject objectPlaced = (GameObject)Instantiate(Resources.Load("Objects/" + objectToPlace), lastPos, Quaternion.Euler(0, rot, 0));
+        Destroy(objectBP);
+        modelBP = null;
+
+        // Do the things required for the object placed
+        switch (objectToPlace)
+        {
+            case "Example":
+                // For example, update vertexs for my other script "Pathfinding"
+                // Update vertexs
+                int firstVertex = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == lastPos));
+                int secondVertex = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == Furniture.Receptions[Furniture.Receptions.Count - 1].GuestPos));
+
+                Pathfinding.Vertexs[firstVertex].Info = "With " + objectToPlace;
+                Pathfinding.Vertexs[secondVertex].Info = "With " + objectToPlace;
+                if (Pathfinding.Vertexs[firstVertex].Conns.Contains(secondVertex))
+                {
+                    Pathfinding.Vertexs[firstVertex].Conns.Remove(secondVertex);
+                    Pathfinding.Vertexs[secondVertex].Conns.Remove(firstVertex);
+                }
+                break;
+            case "Second example":
+                // Or do some awesome functions
+                break;
+            // The default clause is not required. If all objects have to be in this switch statement, then use it to avoid misspellings
+            default:
+                Debug.Log("Error");
+                break;
+        }
+    }
+}
+
+// A small function to check if the object can be placed
+void checkObjectPos(Vector3 pos, Vector3 vPos)
+{
+    if (Pathfinding.Vertexs.Exists(v => v.Pos == vPos && v.Info == "Empty"))
+    {
+        lastPos = vPos;
+        modelBP.GetComponent<Renderer>().material = greenColor;
+    }
+    else
+    {
+        lastPos = pos;
+        modelBP.GetComponent<Renderer>().material = redColor;
+    }
+    objectBP.transform.position = lastPos;
+}
