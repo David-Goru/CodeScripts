@@ -1,0 +1,122 @@
+/* This is a pathfinding script coded for Unity in C# by David Gómez (DavidGoru)
+   It is a simplified script I use for a lot of games I have worked on (Happinessn't, Hotel Tycoon...)
+   
+   Here, I use BFS algorithm to search for the shortest path. I got some help to code this by an 
+   algorithms teacher, Víctor Jiménez (https://scholar.google.es/citations?user=u_D9K78AAAAJ&hl=es)
+   
+   This algorithm finds the shortest path from A to B with four possible movements: left, 
+   right, up and down, and no costs. */
+    
+// Vertexs class
+public class Vertex
+{
+    public Vector3 Pos;
+    public List<int> Conns;
+
+    public Vertex(Vector3 pos)
+    {
+        Pos = pos;
+        Conns = new List<int>();
+    }
+}
+
+public static List<Vertex> Vertexs;
+
+void Start()
+{
+    Vertexs = new List<Vertex>();
+
+    // Create vertexs net
+    int width = 20; // Number of columns
+    int height = 20; // Number of rows
+
+    for (int i = 0; i <= width; i++)
+    {
+        for (int j = 0; j <= height; j++)
+        {
+            Vertexs.Add(new Vertex(new Vector3(i, 0, j)));
+        }
+    }
+
+    // Connect the 4 possible vertexs
+    for (int i = 0; i < Vertexs.Count; i++)
+    {
+        Vector3 pos = Vertexs[i].Pos;
+
+        int vertexIndex;
+
+        // Four vertexs:
+        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x - 1, 0, pos.z)));
+        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);
+        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x, 0, pos.z - 1)));
+        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);
+        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x, 0, pos.z + 1)));
+        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);
+        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x + 1, 0, pos.z)));
+        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);          
+    }
+}
+
+// Using BFS
+public static Stack<Vector3> Route(Vector3 firstPos, Vector3 lastPos)
+{
+    Stack<Vector3> bestRoute = new Stack<Vector3>();
+
+    if (firstPos == lastPos)
+    {
+        bestRoute.Push(firstPos);
+        return bestRoute;
+    }
+
+    List<bool> visited = new List<bool>();
+    List<int> father = new List<int>();
+
+    for (int i = 0; i < Vertexs.Count; i++)
+    {
+        // Set all vertexs to unvisited
+        visited.Add(false);
+
+        // Set father to null (-1)
+        father.Add(-1);
+    }
+
+    int index = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(firstPos.x, 0, firstPos.z)));
+    visited[index] = true;
+
+    Queue<int> box = new Queue<int>();
+    box.Enqueue(index);
+
+    bool pathFinished = false;
+    while (box.Count != 0 && !pathFinished)
+    {
+        int thisIndex = box.Peek();
+        box.Dequeue();
+
+        foreach (int vertex in Vertexs[thisIndex].Conns)
+        {
+            if (!visited[vertex])
+            {
+                if (Vertexs[vertex].Pos == lastPos) pathFinished = true;
+                visited[vertex] = true;
+                father[vertex] = thisIndex;
+                box.Enqueue(vertex);
+            }
+        }
+    }
+
+    if (box.Count == 0 && !pathFinished)
+    {
+        Debug.Log("Route not found: from " + firstPos + " to " + lastPos);
+        return bestRoute;
+    }
+
+    index = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(lastPos.x, 0, lastPos.z)));
+
+    while (index != -1)
+    {
+        bestRoute.Push(Vertexs[index].Pos);
+        index = father[index];
+    }
+
+    return bestRoute;
+}
