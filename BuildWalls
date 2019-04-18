@@ -1,0 +1,231 @@
+/* This is a walls building script coded for Unity in C# by David Gómez (DavidGoru)
+   
+   This script uses Pathfinding script to break vertex connections. It also uses another script,
+   called Master, to store walls and check that there aren't walls already placed in the spot chosen.
+   
+   Here, the player can choose freely in a grid (a ground with the layer "Ground") where to
+   start and finish the wall. When two walls cross, a wall intersection appears to make it prettier.
+   Once the player has chosen the first and last wall position, walls with a size of 1x1 are placed one by one,
+   although this could be changed. It is done that way to let the player destroy walls easier. */
+
+// Preload
+GameObject wall;
+GameObject intersection;
+GameObject wallBlueprint;
+GameObject wallLimit;
+
+// Blueprints
+GameObject wallBp;
+GameObject wallFLBp; // First limit
+GameObject wallLLBp; // Last limit
+
+// Wall info
+Vector3 lastPos;
+int rotation;
+
+void Start()
+{
+    // Preload resources
+    wall = (GameObject)Resources.Load("Walls/Wall");
+    intersection = (GameObject)Resources.Load("Walls/Wall intersection");
+    wallBlueprint = (GameObject)Resources.Load("Walls/Wall blueprint");
+    wallLimit = (GameObject)Resources.Load("Walls/Wall limit blueprint");
+
+    rotation = 0;
+    lastPos = Vector3.one;
+    wallBp = null;
+    wallFLBp = null;
+    wallLLBp = null;
+    WallCost = 20;
+}
+
+void Update()
+{
+    RaycastHit hit;
+    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+    if (Physics.Raycast(ray, out hit, 100, 1 << LayerMask.NameToLayer("Ground")))
+    {
+        Vector3 pos = new Vector3(Mathf.Floor(hit.point.x * 1.0f) / 1.0f + 0.5f, 0, Mathf.Floor(hit.point.z * 1.0f) / 1.0f + 0.5f);
+        if (wallFLBp == null)
+        {
+            wallFLBp = Instantiate(wallLimit, pos, Quaternion.Euler(0, 0, 0));
+            lastPos = pos;
+        }
+        else if (lastPos != pos)
+        {
+            lastPos = pos;
+            if (wallLLBp == null) wallFLBp.transform.position = lastPos;
+            else
+            {
+                Vector3 firstPos = wallFLBp.transform.position;
+                if (Mathf.Abs(pos.x - firstPos.x) >= Mathf.Abs(pos.z - firstPos.z)) pos.z = firstPos.z;
+                else pos.x = firstPos.x;
+                wallLLBp.transform.position = pos;
+
+                // We update the wall
+                if (lastPos == firstPos)
+                {
+                    if (wallBp) Destroy(wallBp);
+                }
+                else
+                {
+                    if (wallBp == null) wallBp = Instantiate(wallBlueprint, new Vector3(0, -2, 0), Quaternion.Euler(0, 0, 0));
+
+                    Vector3 middlePoint;
+
+                    if (Mathf.Abs(lastPos.x - firstPos.x) >= Mathf.Abs(lastPos.z - firstPos.z))
+                    {
+                        middlePoint = new Vector3((lastPos.x + firstPos.x) / 2, 0, firstPos.z);
+                        rotation = 90;
+                    }
+                    else
+                    {
+                        middlePoint = new Vector3(firstPos.x, 0, (lastPos.z + firstPos.z) / 2);
+                        rotation = 0;
+                    }
+
+                    wallBp.transform.position = middlePoint;
+                    wallBp.transform.rotation = Quaternion.Euler(0, rotation, 0);
+                    if (rotation == 0) wallBp.transform.localScale = new Vector3(1, 1, Mathf.Abs(lastPos.z - firstPos.z));
+                    else wallBp.transform.localScale = new Vector3(1, 1, Mathf.Abs(lastPos.x - firstPos.x));
+                }
+            }
+        }
+    }
+    else if (wallFLBp != null)
+    {
+        if (wallLLBp != null)
+        {
+            Destroy(wallBp);
+            wallLLBp.transform.position = wallFLBp.transform.position;
+        }
+        else Destroy(wallFLBp);
+    }
+
+    if (Input.GetMouseButtonDown(0) && wallFLBp != null)
+    {
+        if (wallLLBp == null) wallLLBp = Instantiate(wallLimit, wallFLBp.transform.position, Quaternion.Euler(0, 0, 0));
+        else if (wallLLBp.transform.position != wallFLBp.transform.position)
+        {
+            if (rotation == 0) // Walls on Z, same X
+            {
+                int s; // Start point
+                int e; // End point
+                float x = wallFLBp.transform.position.x;
+
+                if (wallFLBp.transform.position.z < wallLLBp.transform.position.z)
+                {
+                    s = (int)(wallFLBp.transform.position.z + 0.5f);
+                    e = (int)(wallLLBp.transform.position.z + 0.5f);
+                }
+                else
+                {
+                    s = (int)(wallLLBp.transform.position.z + 0.5f);
+                    e = (int)(wallFLBp.transform.position.z + 0.5f);
+                }
+
+                Transform walls = GameObject.Find("Walls").transform;
+                for (int i = s; i < e; i++)
+                {
+                    Vector3 pos = new Vector3(x, 0, i);
+                    if (!Master.Walls.Exists(w => w.Pos == pos && w.Rot == 0))
+                    {
+                        Instantiate(wall, pos, Quaternion.Euler(0, 0, 0)).transform.SetParent(walls);
+                        Master.Walls.Add(new Master.Wall(pos, 0));
+
+                        // Break vertexs connections
+                        int middleLeftV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(x - 0.5f, 0, i)));
+                        int middleRightV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(x + 0.5f, 0, i)));
+
+                        if (middleLeftV != -1 && middleRightV != -1 && Pathfinding.Vertexs[middleLeftV].Conns.Contains(middleRightV))
+                        {
+                            Pathfinding.Vertexs[middleLeftV].Conns.Remove(middleRightV);
+                            Pathfinding.Vertexs[middleRightV].Conns.Remove(middleLeftV);
+                        }
+
+                        // Check possible intersections
+                        Vector3 cornerPos = new Vector3(x, 0, i - 0.5f);
+                        if ((Master.Walls.Exists(w => w.Pos == new Vector3(x + 0.5f, 0, i - 0.5f) && w.Rot == 90)
+                            || Master.Walls.Exists(w => w.Pos == new Vector3(x - 0.5f, 0, i - 0.5f) && w.Rot == 90))
+                            && !Master.Walls.Exists(w => w.Pos == cornerPos && w.Rot == -1))
+                        {
+                            Instantiate(intersection, cornerPos, Quaternion.Euler(0, 0, 0)).transform.SetParent(walls);
+                            Master.Walls.Add(new Master.Wall(cornerPos, -1));
+                        }
+
+                        cornerPos = new Vector3(x, 0, i + 0.5f);
+                        if ((Master.Walls.Exists(w => w.Pos == new Vector3(x + 0.5f, 0, i + 0.5f) && w.Rot == 90)
+                            || Master.Walls.Exists(w => w.Pos == new Vector3(x - 0.5f, 0, i + 0.5f) && w.Rot == 90))
+                            && !Master.Walls.Exists(w => w.Pos == cornerPos && w.Rot == -1))
+                        {
+                            Instantiate(intersection, cornerPos, Quaternion.Euler(0, 0, 0)).transform.SetParent(walls);
+                            Master.Walls.Add(new Master.Wall(cornerPos, -1));
+                        }
+                    }
+                }
+            }
+            else // Walls on X, same Z
+            {
+                int s; // Start point
+                int e; // End point
+                float z = wallFLBp.transform.position.z;
+
+                if (wallFLBp.transform.position.x < wallLLBp.transform.position.x)
+                {
+                    s = (int)(wallFLBp.transform.position.x + 0.5f);
+                    e = (int)(wallLLBp.transform.position.x + 0.5f);
+                }
+                else
+                {
+                    s = (int)(wallLLBp.transform.position.x + 0.5f);
+                    e = (int)(wallFLBp.transform.position.x + 0.5f);
+                }
+
+                Transform walls = GameObject.Find("Walls").transform;
+                for (int i = s; i < e; i++)
+                {
+                    Vector3 pos = new Vector3(i, 0, z);
+                    if (!Master.Walls.Exists(w => w.Pos == pos && w.Rot == 90))
+                    {
+                        Instantiate(wall, pos, Quaternion.Euler(0, 90, 0)).transform.SetParent(walls);
+                        Master.Walls.Add(new Master.Wall(pos, 90));
+
+                        // Break vertexs connections
+                        int middleUpV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(i, 0, z + 0.5f)));
+                        int middleDownV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(i, 0, z - 0.5f)));
+
+                        if (middleUpV != -1 && middleDownV != -1 && Pathfinding.Vertexs[middleUpV].Conns.Contains(middleDownV))
+                        {
+                            Pathfinding.Vertexs[middleUpV].Conns.Remove(middleDownV);
+                            Pathfinding.Vertexs[middleDownV].Conns.Remove(middleUpV);
+                        }
+
+                        // Check possible intersections
+                        Vector3 cornerPos = new Vector3(i - 0.5f, 0, z);
+                        if ((Master.Walls.Exists(w => w.Pos == new Vector3(i - 0.5f, 0, z + 0.5f) && w.Rot == 0)
+                            || Master.Walls.Exists(w => w.Pos == new Vector3(i - 0.5f, 0, z - 0.5f) && w.Rot == 0)) 
+                            && !Master.Walls.Exists(w => w.Pos == cornerPos && w.Rot == -1))
+                        {
+                            Instantiate(intersection, cornerPos, Quaternion.Euler(0, 0, 0)).transform.SetParent(walls);
+                            Master.Walls.Add(new Master.Wall(cornerPos, -1));
+                        }
+
+                        cornerPos = new Vector3(i + 0.5f, 0, z);
+                        if ((Master.Walls.Exists(w => w.Pos == new Vector3(i + 0.5f, 0, z + 0.5f) && w.Rot == 0)
+                            || Master.Walls.Exists(w => w.Pos == new Vector3(i + 0.5f, 0, z - 0.5f) && w.Rot == 0)) 
+                            && !Master.Walls.Exists(w => w.Pos == cornerPos && w.Rot == -1))
+                        {
+                            Instantiate(intersection, cornerPos, Quaternion.Euler(0, 0, 0)).transform.SetParent(walls);
+                            Master.Walls.Add(new Master.Wall(cornerPos, -1));
+                        }
+                    }
+                }
+            }
+
+            Destroy(wallBp);
+            Destroy(wallFLBp);
+            Destroy(wallLLBp);
+        }
+    }           
+}
