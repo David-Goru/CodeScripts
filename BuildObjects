@@ -70,15 +70,15 @@ void Update()
             case "Example":
                 // For example, update vertexs for my other script "Pathfinding"
                 // Update vertexs
-                int firstVertex = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == lastPos));
-                int secondVertex = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == Furniture.Receptions[Furniture.Receptions.Count - 1].GuestPos));
+                int firstVertex = Pathfinding.Vertices.IndexOf(Pathfinding.Vertices.Find(v => v.Pos == lastPos));
+                int secondVertex = Pathfinding.Vertices.IndexOf(Pathfinding.Vertices.Find(v => v.Pos == Furniture.Receptions[Furniture.Receptions.Count - 1].GuestPos));
 
-                Pathfinding.Vertexs[firstVertex].Info = "With " + objectToPlace;
-                Pathfinding.Vertexs[secondVertex].Info = "With " + objectToPlace;
-                if (Pathfinding.Vertexs[firstVertex].Conns.Contains(secondVertex))
+                Pathfinding.Vertices[firstVertex].Info = "With " + objectToPlace;
+                Pathfinding.Vertices[secondVertex].Info = "With " + objectToPlace;
+                if (Pathfinding.Vertices[firstVertex].Conns.Contains(secondVertex))
                 {
-                    Pathfinding.Vertexs[firstVertex].Conns.Remove(secondVertex);
-                    Pathfinding.Vertexs[secondVertex].Conns.Remove(firstVertex);
+                    Pathfinding.Vertices[firstVertex].Conns.Remove(secondVertex);
+                    Pathfinding.Vertices[secondVertex].Conns.Remove(firstVertex);
                 }
                 break;
             case "Second example":
@@ -95,7 +95,7 @@ void Update()
 // A small function to check if the object can be placed
 void checkObjectPos(Vector3 pos, Vector3 vPos)
 {
-    if (Pathfinding.Vertexs.Exists(v => v.Pos == vPos && v.Info == "Empty"))
+    if (Pathfinding.Vertices.Exists(v => v.Pos == vPos && v.Info == "Empty"))
     {
         lastPos = vPos;
         modelBP.GetComponent<Renderer>().material = greenColor;
