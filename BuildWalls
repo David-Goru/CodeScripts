@@ -135,13 +135,13 @@ void Update()
                         Master.Walls.Add(new Master.Wall(pos, 0));
 
                         // Break vertexs connections
-                        int middleLeftV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(x - 0.5f, 0, i)));
-                        int middleRightV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(x + 0.5f, 0, i)));
+                        int middleLeftV = Pathfinding.Vertices.IndexOf(Pathfinding.Vertices.Find(v => v.Pos == new Vector3(x - 0.5f, 0, i)));
+                        int middleRightV = Pathfinding.Vertices.IndexOf(Pathfinding.Vertices.Find(v => v.Pos == new Vector3(x + 0.5f, 0, i)));
 
-                        if (middleLeftV != -1 && middleRightV != -1 && Pathfinding.Vertexs[middleLeftV].Conns.Contains(middleRightV))
+                        if (middleLeftV != -1 && middleRightV != -1 && Pathfinding.Vertices[middleLeftV].Conns.Contains(middleRightV))
                         {
-                            Pathfinding.Vertexs[middleLeftV].Conns.Remove(middleRightV);
-                            Pathfinding.Vertexs[middleRightV].Conns.Remove(middleLeftV);
+                            Pathfinding.Vertices[middleLeftV].Conns.Remove(middleRightV);
+                            Pathfinding.Vertices[middleRightV].Conns.Remove(middleLeftV);
                         }
 
                         // Check possible intersections
@@ -192,13 +192,13 @@ void Update()
                         Master.Walls.Add(new Master.Wall(pos, 90));
 
                         // Break vertexs connections
-                        int middleUpV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(i, 0, z + 0.5f)));
-                        int middleDownV = Pathfinding.Vertexs.IndexOf(Pathfinding.Vertexs.Find(v => v.Pos == new Vector3(i, 0, z - 0.5f)));
+                        int middleUpV = Pathfinding.Vertices.IndexOf(Pathfinding.Vertices.Find(v => v.Pos == new Vector3(i, 0, z + 0.5f)));
+                        int middleDownV = Pathfinding.Vertices.IndexOf(Pathfinding.Vertices.Find(v => v.Pos == new Vector3(i, 0, z - 0.5f)));
 
-                        if (middleUpV != -1 && middleDownV != -1 && Pathfinding.Vertexs[middleUpV].Conns.Contains(middleDownV))
+                        if (middleUpV != -1 && middleDownV != -1 && Pathfinding.Vertices[middleUpV].Conns.Contains(middleDownV))
                         {
-                            Pathfinding.Vertexs[middleUpV].Conns.Remove(middleDownV);
-                            Pathfinding.Vertexs[middleDownV].Conns.Remove(middleUpV);
+                            Pathfinding.Vertices[middleUpV].Conns.Remove(middleDownV);
+                            Pathfinding.Vertices[middleDownV].Conns.Remove(middleUpV);
                         }
 
                         // Check possible intersections
