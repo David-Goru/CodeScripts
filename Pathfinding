@@ -7,7 +7,7 @@
    This algorithm finds the shortest path from A to B with four possible movements: left, 
    right, up and down, and no costs. */
     
-// Vertexs class
+// Vertices class
 public class Vertex
 {
     public Vector3 Pos;
@@ -20,13 +20,13 @@ public class Vertex
     }
 }
 
-public static List<Vertex> Vertexs;
+public static List<Vertex> Vertices;
 
 void Start()
 {
-    Vertexs = new List<Vertex>();
+    Vertices = new List<Vertex>();
 
-    // Create vertexs net
+    // Create vertices net
     int width = 20; // Number of columns
     int height = 20; // Number of rows
 
@@ -34,26 +34,26 @@ void Start()
     {
         for (int j = 0; j <= height; j++)
         {
-            Vertexs.Add(new Vertex(new Vector3(i, 0, j)));
+            Vertices.Add(new Vertex(new Vector3(i, 0, j)));
         }
     }
 
-    // Connect the 4 possible vertexs
+    // Connect the 4 possible vertices
     for (int i = 0; i < Vertexs.Count; i++)
     {
-        Vector3 pos = Vertexs[i].Pos;
+        Vector3 pos = Vertices[i].Pos;
 
         int vertexIndex;
 
-        // Four vertexs:
-        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x - 1, 0, pos.z)));
-        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);
-        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x, 0, pos.z - 1)));
-        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);
-        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x, 0, pos.z + 1)));
-        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);
-        vertexIndex = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(pos.x + 1, 0, pos.z)));
-        if (vertexIndex != -1) Vertexs[i].Conns.Add(vertexIndex);          
+        // Four vertices:
+        vertexIndex = Vertices.IndexOf(Vertices.Find(v => v.Pos == new Vector3(pos.x - 1, 0, pos.z)));
+        if (vertexIndex != -1) Vertices[i].Conns.Add(vertexIndex);
+        vertexIndex = Vertices.IndexOf(Vertices.Find(v => v.Pos == new Vector3(pos.x, 0, pos.z - 1)));
+        if (vertexIndex != -1) Vertices[i].Conns.Add(vertexIndex);
+        vertexIndex = Vertices.IndexOf(Vertices.Find(v => v.Pos == new Vector3(pos.x, 0, pos.z + 1)));
+        if (vertexIndex != -1) Vertices[i].Conns.Add(vertexIndex);
+        vertexIndex = Vertices.IndexOf(Vertices.Find(v => v.Pos == new Vector3(pos.x + 1, 0, pos.z)));
+        if (vertexIndex != -1) Vertices[i].Conns.Add(vertexIndex);          
     }
 }
 
@@ -71,16 +71,16 @@ public static Stack<Vector3> Route(Vector3 firstPos, Vector3 lastPos)
     List<bool> visited = new List<bool>();
     List<int> father = new List<int>();
 
-    for (int i = 0; i < Vertexs.Count; i++)
+    for (int i = 0; i < Vertices.Count; i++)
     {
-        // Set all vertexs to unvisited
+        // Set all vertices to unvisited
         visited.Add(false);
 
         // Set father to null (-1)
         father.Add(-1);
     }
 
-    int index = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(firstPos.x, 0, firstPos.z)));
+    int index = Vertices.IndexOf(Vertices.Find(v => v.Pos == new Vector3(firstPos.x, 0, firstPos.z)));
     visited[index] = true;
 
     Queue<int> box = new Queue<int>();
@@ -92,7 +92,7 @@ public static Stack<Vector3> Route(Vector3 firstPos, Vector3 lastPos)
         int thisIndex = box.Peek();
         box.Dequeue();
 
-        foreach (int vertex in Vertexs[thisIndex].Conns)
+        foreach (int vertex in Vertices[thisIndex].Conns)
         {
             if (!visited[vertex])
             {
@@ -110,11 +110,11 @@ public static Stack<Vector3> Route(Vector3 firstPos, Vector3 lastPos)
         return bestRoute;
     }
 
-    index = Vertexs.IndexOf(Vertexs.Find(v => v.Pos == new Vector3(lastPos.x, 0, lastPos.z)));
+    index = Vertices.IndexOf(Vertices.Find(v => v.Pos == new Vector3(lastPos.x, 0, lastPos.z)));
 
     while (index != -1)
     {
-        bestRoute.Push(Vertexs[index].Pos);
+        bestRoute.Push(Vertices[index].Pos);
         index = father[index];
     }
 
