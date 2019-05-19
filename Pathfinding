@@ -1,4 +1,4 @@
-/* This is a pathfinding script coded for Unity in C# by David Gómez (DavidGoru)
+/* This is a pathfinding script coded for Unity in C# by David Gómez (David-Goru)
    It is a simplified script I use for a lot of games I have worked on (Happinessn't, Hotel Tycoon...)
    
    Here, I use BFS algorithm to search for the shortest path. I got some help to code this by an 
