@@ -1,6 +1,6 @@
-/* This is a building script coded for Unity in C# by David Gómez (DavidGoru)
+/* This is a building script coded for Unity in C# by David Gómez (David-Goru)
    This script uses another script, Pathfinding, also posted in my github page
-   https://github.com/DavidGoru/CodeSamples/
+   https://github.com/David-Goru/CodeScripts/
 
    I use materials to let the player know if the object can't be placed there
    or if he's at a good spot (red vs green colors)
