@@ -9,3 +9,6 @@ https://github.com/DavidGoru/CodeSamples/blob/master/BuildObjects
 
 BuildWalls: let the player build a wall starting and ending at the chosen positions.
 https://github.com/DavidGoru/CodeSamples/blob/master/BuildWalls
+
+Player movement: the player can move the character and rotate the camera freely.
+https://github.com/David-Goru/CodeScripts/blob/master/Movement
