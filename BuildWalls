@@ -1,4 +1,4 @@
-/* This is a walls building script coded for Unity in C# by David Gómez (DavidGoru)
+/* This is a walls building script coded for Unity in C# by David Gómez (David-Goru)
    
    This script uses Pathfinding script to break vertex connections. It also uses another script,
    called Master, to store walls and check that there aren't walls already placed in the spot chosen.
