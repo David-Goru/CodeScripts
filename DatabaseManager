@@ -1,0 +1,170 @@
+/* This is a database connection and manager script coded for Unity in C# by David Gómez (David-Goru)
+
+   It can get info from the database: from one line of info, to several lines, check information or edit it.
+   
+   It uses NPGSQL. Is better to use a server to avoid writing the password on the script files.*/
+
+public static NpgsqlConnection conn;
+
+// Connect to the DB
+void connection()
+{
+    string ip = "IP";
+    string port = "post";
+    string user = "user";
+    string password = "password"; // Not safe
+    string ddbb = "database";
+
+    conn = new NpgsqlConnection();
+
+    conn.ConnectionString = "Server=" + DBIP + ";Port=" + port + ";User ID=" + user + ";Password=" + password + ";Database=" + ddbb;
+
+    try
+    {
+        conn.Open();
+    }
+    catch (Exception ex)
+    {
+        Debug.Log("Can't start connection. " + ex.Message);
+    }
+}
+
+// Get a single line of info
+public string GetInfoSingle(NpgsqlCommand cmd)
+{        
+    connection();
+
+    NpgsqlDataReader reader = null;
+    string data = "";
+
+    try
+    {
+        cmd.Connection = conn;
+        reader = cmd.ExecuteReader();
+
+        if (reader.Read())
+        {
+            data = reader.GetValue(0).ToString();
+        }
+    }
+    catch (Exception ex)
+    {
+        Debug.Log("ERROR getting data. " + ex.Message);
+    }
+    finally
+    {
+        if (reader != null)
+        {
+            reader.Close();
+        }
+
+        if (conn != null)
+        {
+            conn.Close();
+        }
+    }
+
+    return data;
+}
+
+// Get a list of lines of info
+public List<string> GetInfoMultiple(NpgsqlCommand cmd)
+{        
+    connection();
+
+    NpgsqlDataReader reader = null;
+    List<string> data = new List<string>();
+
+    try
+    {
+        cmd.Connection = conn;
+        reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            for (int i = 0; i < reader.FieldCount; i++)
+            { 
+                data.Add(reader.GetValue(i).ToString());
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Debug.Log("ERROR getting data. " + ex.Message);
+    }
+    finally
+    {
+        if (reader != null)
+        {
+            reader.Close();
+        }
+
+        if (conn != null)
+        {
+            conn.Close();
+        }
+    }
+
+    return data;
+}
+
+// Check that exists in DB
+public bool CheckInfo(NpgsqlCommand cmd)
+{        
+    connection();
+
+    NpgsqlDataReader reader = null;
+    bool check = false;
+
+    try
+    {
+        cmd.Connection = conn;
+        reader = cmd.ExecuteReader();
+
+        if (reader.Read())
+        {
+            check = true;
+        }
+    }
+    catch (Exception ex)
+    {
+        Debug.Log("ERROR checking data. " + ex.Message);
+    }
+    finally
+    {
+        if (reader != null)
+        {
+            reader.Close();
+        }
+
+        if (conn != null)
+        {
+            conn.Close();
+        }
+    }
+
+    return check;
+}
+
+// Add or update data
+public void ChangeInfo(NpgsqlCommand cmd)
+{        
+    connection();
+
+    try
+    {
+        cmd.Connection = conn;
+        cmd.ExecuteNonQuery();
+    }
+    catch (Exception ex)
+    {
+        Debug.Log("ERROR updatting data. " + ex.Message);
+    }
+    finally
+    {
+        if (conn != null)
+        {
+            conn.Close();
+        }
+    }
+}
