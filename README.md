@@ -12,3 +12,6 @@ https://github.com/DavidGoru/CodeSamples/blob/master/BuildWalls
 
 Player movement: the player can move the character and rotate the camera freely.
 https://github.com/David-Goru/CodeScripts/blob/master/Movement
+
+DatabaseManager: connect to a database, get info and update it using NPSQL.
+https://github.com/David-Goru/CodeScripts/blob/master/DatabaseManager
