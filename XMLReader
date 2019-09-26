@@ -1,0 +1,18 @@
+/* This is a XML reader script coded for Unity in C# by David Gómez (David-Goru)
+
+   It is a simple script that loads info from a Doc.xml document and shows the info
+   through the Unity Debug console.
+   
+   This method needs the System.Xml library. */
+
+public void GetInfo()
+{
+    XmlDocument doc = new XmlDocument();
+    doc.Load(Application.dataPath + "/Data/Doc.xml");
+    XmlNodeList info = doc.GetElementsByTagName("Item");
+
+    foreach (XmlNode item in info)
+    {   
+        Debug.Log(item["Text test"].InnerText + ", " + int.Parse(item["Number test"].InnerText));
+    }
+}
