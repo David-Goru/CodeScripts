@@ -15,3 +15,6 @@ https://github.com/David-Goru/CodeScripts/blob/master/Movement
 
 DatabaseManager: connect to a database, get info and update it using NPSQL.
 https://github.com/David-Goru/CodeScripts/blob/master/DatabaseManager
+
+XMLReader: short method to get info from a XML file.
+https://github.com/David-Goru/CodeScripts/blob/master/XMLReader
