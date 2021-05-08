@@ -1,5 +1,5 @@
 # CodeSamples
-Some small codes I did for my own to show my programming skills. <br/>
+Some small codes I did on my own to show my programming skills. <br/>
 
 Pathfinding: find shortest path from A to B with no costs. <br/>
 https://github.com/DavidGoru/CodeSamples/blob/master/Pathfinding
